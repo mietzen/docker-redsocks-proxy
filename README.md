@@ -47,7 +47,7 @@ debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your I
 ```
 
 
-If your docker host is not already connected to the mullvad VPN you might want to use (gluetun)[https://hub.docker.com/r/qmcgaw/gluetun] and stack the network connection, e.g.:
+If your docker host is not already connected to the mullvad VPN you might want to use [gluetun](https://hub.docker.com/r/qmcgaw/gluetun) and stack the network connection, e.g.:
 
 ```yaml
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
