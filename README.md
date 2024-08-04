@@ -2,9 +2,9 @@
 
 This is an example on how to use redsocks to proxy all http and https traffic through a mullvad socks5 proxy.
 
-In this example the http and https traffic of the debian container will always be redirected through the set proxy. This perquisites that your docker host is already running inside the mullvad VPN.\
+In this example the http and https traffic of the debian container will always be redirected through the set proxy. This perquisites that your docker host is already running inside the mullvad VPN.
 
-compose file:
+compose-file:
 ```yaml
 version: "3"
 
