@@ -6,8 +6,6 @@ In this example the http and https traffic of the debian container will always b
 
 compose-file:
 ```yaml
-version: "3"
-
 services:
   redsocks:
     image: mietzen/redsocks-proxy:stable
@@ -56,8 +54,6 @@ If your docker host is not already connected to the mullvad VPN you might want t
 
 # You need to setup gluetun yourself!
 
-version: "3"
-
 services:
   gluetun:
     image: qmcgaw/gluetun
@@ -95,6 +91,29 @@ services:
       - redsocks
     network_mode: service:redsocks
     command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    restart: unless-stopped
+```
+
+If your container behind redsocks exposes a port the port is mirrored to the redsocks containers, to access just open the port on the redsocks container:
+
+```yaml
+services:
+  redsocks:
+    image: mietzen/redsocks-proxy:stable
+    hostname: redsocks
+    privileged: true
+    environment:
+      - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
+      - PROXY_PORT=1080
+    dns: 9.9.9.9
+    restart: unless-stopped
+  whoami:
+    image: traefik/whoami
+    depends_on:
+      - redsocks
+    command:
+       - --port=2001
+    network_mode: service:redsocks
     restart: unless-stopped
 ```
 
