@@ -97,3 +97,7 @@ services:
     command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
     restart: unless-stopped
 ```
+
+Sources:
+- [PXke's blog: Using redsocks to proxy a docker container traffic](https://web.archive.org/web/20240302223218/https://blog.pxke.me/redsocksdocker.html)
+- [SO-Answer from marlar: How to make docker container connect everything through proxy](https://stackoverflow.com/a/71099635)
