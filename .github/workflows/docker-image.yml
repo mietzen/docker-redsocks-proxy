@@ -122,14 +122,14 @@ jobs:
           echo -n " ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" >> push-shared-tags.sh
         done <<< "$(cat .github/platforms.json | jq -r '.platforms | join("\n")')"
         echo "" >> push-shared-tags.sh
-        echo -n "docker manifest create ${DOCKER_USER}/${IMAGE_NAME}:latest" >> push-shared-tags.sh
+        echo -n "docker manifest create ${DOCKER_USER}/${IMAGE_NAME}:stable" >> push-shared-tags.sh
         while read -r PLATFORM; do
           ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
           echo -n " ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" >> push-shared-tags.sh
         done <<< "$(cat .github/platforms.json | jq -r '.platforms | join("\n")')"
         echo "" >> push-shared-tags.sh
         echo "docker manifest push ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}" >> push-shared-tags.sh
-        echo "docker manifest push ${DOCKER_USER}/${IMAGE_NAME}:latest" >> push-shared-tags.sh
+        echo "docker manifest push ${DOCKER_USER}/${IMAGE_NAME}:stable" >> push-shared-tags.sh
         cat push-shared-tags.sh
         chmod +x ./push-shared-tags.sh
         ./push-shared-tags.sh

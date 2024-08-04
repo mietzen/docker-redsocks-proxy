@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  redsocks:
+    image: mietzen/redsocks-proxy:stable
+    hostname: redsocks
+    privileged: true
+    environment:
+      - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
+      - PROXY_PORT=1080
+    dns: 9.9.9.9
+    restart: unless-stopped
+
+  debian:
+    image: mietzen/debian-curl-jq:stable
+    depends_on:
+      - redsocks
+    network_mode: service:redsocks
+    command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    restart: unless-stopped
