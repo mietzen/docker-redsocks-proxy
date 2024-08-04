@@ -101,6 +101,8 @@ services:
   redsocks:
     image: mietzen/redsocks-proxy:stable
     hostname: redsocks
+    ports:
+      - "8080:2001"
     privileged: true
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
