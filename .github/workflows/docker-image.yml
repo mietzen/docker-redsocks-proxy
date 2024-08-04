@@ -1,0 +1,150 @@
+name: Build & Upload Docker Image
+
+on:
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    outputs:
+      build_matrix: ${{ steps.set-matrix.outputs.build_matrix }}
+      version: ${{ steps.set-matrix.outputs.version }}
+      repo_name_lower_case: ${{ steps.set-matrix.outputs.repo_name_lower_case }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup Matrix-Jobs
+      id: set-matrix
+      run: |
+        echo "build_matrix=$(cat .github/platforms.json)" >> $GITHUB_OUTPUT
+        echo "version=$(grep FROM ./Dockerfile | head -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)" >> $GITHUB_OUTPUT
+        echo "repo_name_lower_case=$(echo ${GITHUB_REPOSITORY@L} | cut -d'/' -f2)" >> $GITHUB_OUTPUT
+
+  Build:
+    runs-on: ubuntu-latest
+    needs: Setup
+    env:
+      VERSION: ${{ needs.Setup.outputs.version }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME || needs.Setup.outputs.repo_name_lower_case }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ${{ insert }}: ${{ fromJson(needs.Setup.outputs.build_matrix) }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build
+      env:
+        DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
+        BUILD_NR: ${{ github.run_number }}
+        PLATFORM: ${{ matrix.platforms }}
+      run: |
+        ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
+        echo ""
+        echo "============================================================="
+        echo "Building: ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}"
+        echo "============================================================="
+        echo ""
+        docker buildx build \
+          --tag "${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" \
+          --platform ${PLATFORM} \
+          --load \
+          -f Dockerfile .
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      if: github.event_name == 'release'
+      with:
+        username: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
+        password: ${{ secrets.DOCKER_HUB_DEPLOY_KEY }}
+
+    - name: Push Images
+      if: github.event_name == 'release'
+      env:
+        DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
+        BUILD_NR: ${{ github.run_number }}
+        PLATFORM: ${{ matrix.platforms }}
+      run: |
+        ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
+        echo ""
+        echo "============================================================="
+        echo "Pushing: ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}"
+        echo "============================================================="
+        echo ""
+        docker tag "${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" "${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}"
+        docker push "${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}"
+        docker push "${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}"
+
+  Shared-Manifest:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs:
+      - Build
+      - Setup
+    env:
+      VERSION: ${{ needs.Setup.outputs.version }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME || needs.Setup.outputs.repo_name_lower_case }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
+        password: ${{ secrets.DOCKER_HUB_DEPLOY_KEY }}
+
+    - name: Create and push shared manifest
+      env:
+        DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
+        BUILD_NR: ${{ github.run_number }}
+      run: |
+        echo ""
+        echo "============================================================="
+        echo "Pushing shared manifest: ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}"
+        echo "============================================================="
+        echo ""
+        echo "#!/bin/bash" > push-shared-tags.sh
+        echo -n "docker manifest create ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}" >> push-shared-tags.sh
+        while read -r PLATFORM; do
+          ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
+          echo -n " ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" >> push-shared-tags.sh
+        done <<< "$(cat .github/platforms.json | jq -r '.platforms | join("\n")')"
+        echo "" >> push-shared-tags.sh
+        echo -n "docker manifest create ${DOCKER_USER}/${IMAGE_NAME}:latest" >> push-shared-tags.sh
+        while read -r PLATFORM; do
+          ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
+          echo -n " ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}-${ARCH}-${BUILD_NR}" >> push-shared-tags.sh
+        done <<< "$(cat .github/platforms.json | jq -r '.platforms | join("\n")')"
+        echo "" >> push-shared-tags.sh
+        echo "docker manifest push ${DOCKER_USER}/${IMAGE_NAME}:${VERSION}" >> push-shared-tags.sh
+        echo "docker manifest push ${DOCKER_USER}/${IMAGE_NAME}:latest" >> push-shared-tags.sh
+        cat push-shared-tags.sh
+        chmod +x ./push-shared-tags.sh
+        ./push-shared-tags.sh
+
+  Check-Build:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    needs:
+      - Build
+      - Shared-Manifest
+    steps:
+      - run: |
+          result="${{ needs.Build.result }}"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi

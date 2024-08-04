@@ -1,0 +1,30 @@
+name: "Auto Release"
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  auto-release:
+    if: github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'docker')
+
+    name: "Auto Release"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get Version
+        id: get-version
+        run: |
+          echo "version=$(grep FROM ./Dockerfile | head -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)" >> $GITHUB_OUTPUT
+      - uses: actions/create-github-app-token@v1
+        id: generate-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Create Release
+        run: gh release create ${{ steps.get-version.outputs.version }} --generate-notes
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
