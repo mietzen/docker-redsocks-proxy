@@ -4,7 +4,6 @@ This is an example on how to use redsocks to proxy all http and https traffic th
 
 In this example the http and https traffic of the debian container will always be redirected through the set proxy. This perquisites that your docker host is already running inside the mullvad VPN.
 
-compose-file:
 ```yaml
 services:
   redsocks:
@@ -28,8 +27,6 @@ services:
     restart: unless-stopped
 ```
 
-Output:
-
 ```shell
 Attaching to debian-1, redsocks-1
 redsocks-1  | Configuration:
@@ -45,6 +42,7 @@ redsocks-1  | 1722762436.183053 info redsocks.c:1243 redsocks_accept_client(...)
 redsocks-1  | 1722762436.240962 info redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:39002->45.83.223.233:443]: accepted
 debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
 ```
+## Published ports
 
 If your container behind redsocks exposes a port the port is mirrored to the redsocks containers, to access just open the port on the redsocks container:
 
@@ -86,6 +84,8 @@ Host: localhost:8080
 User-Agent: curl/8.9.1
 Accept: */*
 ```
+
+## Stacked service network
 
 If your docker host is not already connected to the mullvad VPN you might want to use [gluetun](https://hub.docker.com/r/qmcgaw/gluetun) and stack the network connection, e.g.:
 
