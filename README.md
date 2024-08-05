@@ -46,6 +46,32 @@ redsocks-1  | 1722762436.240962 info redsocks.c:1243 redsocks_accept_client(...)
 debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
 ```
 
+If your container behind redsocks exposes a port the port is mirrored to the redsocks containers, to access just open the port on the redsocks container:
+
+```yaml
+services:
+  redsocks:
+    image: mietzen/redsocks-proxy:stable
+    hostname: redsocks
+    ports:
+      - "8080:2001"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
+      - PROXY_PORT=1080
+    dns: 9.9.9.9
+    restart: unless-stopped
+  whoami:
+    image: traefik/whoami
+    depends_on:
+      - redsocks
+    command:
+       - --port=2001
+    network_mode: service:redsocks
+    restart: unless-stopped
+```
 
 If your docker host is not already connected to the mullvad VPN you might want to use [gluetun](https://hub.docker.com/r/qmcgaw/gluetun) and stack the network connection, e.g.:
 
@@ -98,33 +124,6 @@ services:
     restart: unless-stopped
 ```
 
-If your container behind redsocks exposes a port the port is mirrored to the redsocks containers, to access just open the port on the redsocks container:
-
-```yaml
-services:
-  redsocks:
-    image: mietzen/redsocks-proxy:stable
-    hostname: redsocks
-    ports:
-      - "8080:2001"
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    environment:
-      - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
-      - PROXY_PORT=1080
-    dns: 9.9.9.9
-    restart: unless-stopped
-  whoami:
-    image: traefik/whoami
-    depends_on:
-      - redsocks
-    command:
-       - --port=2001
-    network_mode: service:redsocks
-    restart: unless-stopped
-```
-
-Sources:
+**Sources:**
 - [PXke's blog: Using redsocks to proxy a docker container traffic](https://web.archive.org/web/20240302223218/https://blog.pxke.me/redsocksdocker.html)
 - [SO-Answer from marlar: How to make docker container connect everything through proxy](https://stackoverflow.com/a/71099635)
