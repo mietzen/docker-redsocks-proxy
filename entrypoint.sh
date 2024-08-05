@@ -9,6 +9,5 @@ echo "Restarting redsocks and redirecting traffic via iptables"
 /etc/init.d/redsocks restart
 iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8081
 iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDIRECT --to-port 8081
-echo "Getting IP ..."
-curl -sSL https://am.i.mullvad.net/connected
+echo "IP Address: $(curl -sSL https://v4.ident.me)"
 tail -f /var/log/redsocks.log
