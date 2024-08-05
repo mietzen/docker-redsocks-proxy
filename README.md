@@ -35,8 +35,7 @@ redsocks-1  | PROXY_PORT: 1080
 redsocks-1  | Setting config variables
 redsocks-1  | Restarting redsocks and redirecting traffic via iptables
 redsocks-1  | Restarting redsocks: redsocks.
-redsocks-1  | Getting IP ...
-redsocks-1  | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
+redsocks-1  | IP Address: 193.32.248.181
 redsocks-1  | 1722762436.099561 notice main.c:165 main(...) redsocks started, conn_max=131072
 redsocks-1  | 1722762436.183053 info redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:38986->45.83.223.233:443]: accepted
 redsocks-1  | 1722762436.240962 info redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:39002->45.83.223.233:443]: accepted
