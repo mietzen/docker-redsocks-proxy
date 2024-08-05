@@ -142,3 +142,4 @@ services:
 **Sources:**
 - [PXke's blog: Using redsocks to proxy a docker container traffic](https://web.archive.org/web/20240302223218/https://blog.pxke.me/redsocksdocker.html)
 - [SO-Answer from marlar: How to make docker container connect everything through proxy](https://stackoverflow.com/a/71099635)
+- [Docker Community Forums: Diffcult to find documentation about how network_mode: “service:<service_name>” works](https://web.archive.org/web/20240721062403/https://forums.docker.com/t/diffcult-to-find-documentation-about-how-network-mode-service-service-name-works/137008)
