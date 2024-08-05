@@ -10,7 +10,9 @@ services:
   redsocks:
     image: mietzen/redsocks-proxy:stable
     hostname: redsocks
-    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
       - PROXY_PORT=1080
@@ -78,7 +80,9 @@ services:
     hostname: redsocks
     depends_on:
       - gluetun
-    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
       - PROXY_PORT=1080
@@ -103,7 +107,9 @@ services:
     hostname: redsocks
     ports:
       - "8080:2001"
-    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
       - PROXY_PORT=1080
