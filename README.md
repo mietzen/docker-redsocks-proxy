@@ -15,7 +15,7 @@ services:
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
       - PROXY_PORT=1080
-    dns: 9.9.9.9
+    dns: 9.9.9.9 # Optional
     restart: unless-stopped
 
   debian:
