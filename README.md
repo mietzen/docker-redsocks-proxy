@@ -73,6 +73,20 @@ services:
     restart: unless-stopped
 ```
 
+```
+$ curl http://localhost:8080/
+Hostname: redsocks
+IP: 127.0.0.1
+IP: ::1
+IP: 172.20.0.2
+IP: fe80::42:acff:fe14:2
+RemoteAddr: 172.16.0.1:59666
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/8.9.1
+Accept: */*
+```
+
 If your docker host is not already connected to the mullvad VPN you might want to use [gluetun](https://hub.docker.com/r/qmcgaw/gluetun) and stack the network connection, e.g.:
 
 ```yaml
