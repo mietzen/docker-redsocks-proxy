@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
 ```
 
-```
+```shell
 $ curl http://localhost:8080/
 Hostname: redsocks
 IP: 127.0.0.1
