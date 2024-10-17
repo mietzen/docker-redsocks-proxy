@@ -1,4 +1,4 @@
-FROM debian:stable-20240926
+FROM debian:stable-20241016
 
 RUN apt-get update && apt-get install -y \
         iptables \
