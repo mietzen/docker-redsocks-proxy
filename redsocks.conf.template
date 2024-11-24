@@ -1,16 +1,34 @@
 base {
-    log_debug = off;
-    log_info = on;
-    log = "file:/var/log/redsocks.log";
+    log_debug = vLOG_DEBUG;
+    log_info = vLOG_INFO;
+    log = vLOG;
     daemon = on;
     user = redsocks;
     group = redsocks;
     redirector = iptables;
+
+    // Optional configurations
+    tcp_keepalive_time = vTCP_KEEPALIVE_TIME;
+    tcp_keepalive_probes = vTCP_KEEPALIVE_PROBES;
+    tcp_keepalive_intvl = vTCP_KEEPALIVE_INTVL;
+    rlimit_nofile = vRLIMIT_NOFILE;
+    redsocks_conn_max = vREDSOCKS_CONN_MAX;
+    connpres_idle_timeout = vCONNPRES_IDLE_TIMEOUT;
+    max_accept_backoff = vMAX_ACCEPT_BACKOFF;
 }
+
 redsocks {
-    local_ip = 127.0.0.1;
-    local_port = 8081;
-    ip = vPROXY-SERVER;
-    port = vPROXY-PORT;
-    type = socks5;
+    local_ip = vLOCAL_IP;
+    local_port = vLOCAL_PORT;
+    ip = vPROXY_SERVER;
+    port = vPROXY_PORT;
+    type = vPROXY_TYPE;
+    login = vLOGIN;
+    password = vPASSWORD;
+
+    // Optional configurations
+    on_proxy_fail = vON_PROXY_FAIL;
+    disclose_src = vDISCLOSE_SRC;
+    listenq = vLISTENQ;
+    splice = vSPLICE;
 }
