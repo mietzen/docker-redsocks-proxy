@@ -5,10 +5,7 @@ set -e
 # Set default values for optional variables
 : "${LOG_DEBUG:=off}"
 : "${LOG_INFO:=on}"
-: "${LOG:=stderr}"
-: "${USER:=redsocks}"
-: "${GROUP:=redsocks}"
-: "${REDIRECTOR:=iptables}"
+: "${LOG:='file:/var/log/redsocks.log'}"
 : "${LOCAL_IP:=127.0.0.1}"
 : "${LOCAL_PORT:=8081}"
 : "${PROXY_TYPE:=socks5}"

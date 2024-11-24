@@ -31,7 +31,6 @@ services:
     dns: 9.9.9.9
     restart: unless-stopped
 
-
   debian:
     image: mietzen/debian-curl-jq:stable
     depends_on:

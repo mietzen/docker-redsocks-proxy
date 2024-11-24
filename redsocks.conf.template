@@ -1,12 +1,11 @@
 base {
-    log_debug = vLOG_DEBUG;
-    log_info = vLOG_INFO;
-    log = vLOG;
     daemon = on;
     user = redsocks;
     group = redsocks;
     redirector = iptables;
-
+    log_debug = vLOG_DEBUG;
+    log_info = vLOG_INFO;
+    log = vLOG;
     // Optional configurations
     tcp_keepalive_time = vTCP_KEEPALIVE_TIME;
     tcp_keepalive_probes = vTCP_KEEPALIVE_PROBES;
@@ -23,10 +22,10 @@ redsocks {
     ip = vPROXY_SERVER;
     port = vPROXY_PORT;
     type = vPROXY_TYPE;
-    login = vLOGIN;
-    password = vPASSWORD;
 
     // Optional configurations
+    login = vLOGIN;
+    password = vPASSWORD;
     on_proxy_fail = vON_PROXY_FAIL;
     disclose_src = vDISCLOSE_SRC;
     listenq = vLISTENQ;
