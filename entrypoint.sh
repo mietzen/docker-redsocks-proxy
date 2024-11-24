@@ -3,23 +3,24 @@
 set -e
 
 # Set default values for optional variables
-: "${LOG_DEBUG:=off}"
-: "${LOG_INFO:=on}"
-: "${LOG:='file:/var/log/redsocks.log'}"
-: "${LOCAL_IP:=127.0.0.1}"
-: "${LOCAL_PORT:=8081}"
-: "${PROXY_TYPE:=socks5}"
-: "${TCP_KEEPALIVE_TIME:=0}"
-: "${TCP_KEEPALIVE_PROBES:=0}"
-: "${TCP_KEEPALIVE_INTVL:=0}"
-: "${RLIMIT_NOFILE:=0}"
-: "${REDSOCKS_CONN_MAX:=0}"
-: "${CONNPRES_IDLE_TIMEOUT:=7440}"  # Default is 2 hours 4 minutes (RFC 5382)
-: "${MAX_ACCEPT_BACKOFF:=60000}"
-: "${ON_PROXY_FAIL:=close}"
-: "${DISCLOSE_SRC:=false}"
-: "${LISTENQ:=128}"
-: "${SPLICE:=false}"
+export LOG_DEBUG=${LOG_DEBUG:-off}
+export LOG_INFO=${LOG_INFO:-on}
+export LOG_FILE="${LOG_FILE:-/var/log/redsocks.log}"
+export LOG="\"file:${LOG_FILE}\""
+export LOCAL_IP=${LOCAL_IP:-127.0.0.1}
+export LOCAL_PORT=${LOCAL_PORT:-8081}
+export PROXY_TYPE=${PROXY_TYPE:-socks5}
+export TCP_KEEPALIVE_TIME=${TCP_KEEPALIVE_TIME:-0}
+export TCP_KEEPALIVE_PROBES=${TCP_KEEPALIVE_PROBES:-0}
+export TCP_KEEPALIVE_INTVL=${TCP_KEEPALIVE_INTVL:-0}
+export RLIMIT_NOFILE=${RLIMIT_NOFILE:-0}
+export REDSOCKS_CONN_MAX=${REDSOCKS_CONN_MAX:-0}
+export CONNPRES_IDLE_TIMEOUT=${CONNPRES_IDLE_TIMEOUT:-7440}  # Default is 2 hours 4 minutes (RFC 5382)
+export MAX_ACCEPT_BACKOFF=${MAX_ACCEPT_BACKOFF:-60000}
+export ON_PROXY_FAIL=${ON_PROXY_FAIL:-close}
+export DISCLOSE_SRC=${DISCLOSE_SRC:-false}
+export LISTENQ=${LISTENQ:-128}
+export SPLICE=${SPLICE:-false}
 
 # Validate mandatory variables
 if [ -z "$PROXY_SERVER" ] || [ -z "$PROXY_PORT" ]; then
@@ -49,4 +50,4 @@ iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port "$LOCAL_PORT"
 iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDIRECT --to-port "$LOCAL_PORT"
 
 echo "Container IP Address: $(curl -sSL https://v4.ident.me)"
-tail -f /var/log/redsocks.log
+tail -f "$LOG_FILE"
