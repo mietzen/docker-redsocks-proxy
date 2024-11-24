@@ -8,6 +8,26 @@ services:
     environment:
       - PROXY_SERVER=de-ber-wg-socks5-005.relays.mullvad.net
       - PROXY_PORT=1080
+      # Optional:
+      # - LOGIN=myuser
+      # - PASSWORD=mypass
+      # - LOCAL_IP=127.0.0.1
+      # - LOCAL_PORT=8081
+      # - PROXY_TYPE=socks5
+      # - LOG_DEBUG=on
+      # - LOG_INFO=on
+      # - LOG_FILE=/var/log/redsocks.log
+      # - CONNPRES_IDLE_TIMEOUT=7440
+      # - DISCLOSE_SRC=false
+      # - LISTENQ=128
+      # - MAX_ACCEPT_BACKOFF=60000
+      # - ON_PROXY_FAIL=close
+      # - REDSOCKS_CONN_MAX=500
+      # - RLIMIT_NOFILE=1024
+      # - SPLICE=false
+      # - TCP_KEEPALIVE_INTVL=75
+      # - TCP_KEEPALIVE_PROBES=9
+      # - TCP_KEEPALIVE_TIME=300
     dns: 9.9.9.9
     restart: unless-stopped
 
