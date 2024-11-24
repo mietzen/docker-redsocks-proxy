@@ -37,9 +37,9 @@ if [ -z "$LOGIN" ] || [ -z "$PASSWORD" ]; then
     sed -i '/password = /d' /etc/redsocks.conf
 fi
 
-# Print final configuration for debugging (optional)
-echo "Final Redsocks configuration:"
-cat /etc/redsocks.conf
+# Print final configuration for debugging
+echo "Final Redsocks configuration (sensitive data redacted):"
+sed -e 's/\(login = \).*/\1"***";/' -e 's/\(password = \).*/\1"***";/' /etc/redsocks.conf
 
 # Restart Redsocks service and configure iptables
 echo "Restarting Redsocks and configuring iptables..."
