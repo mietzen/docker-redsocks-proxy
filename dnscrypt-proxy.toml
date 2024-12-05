@@ -1,0 +1,16 @@
+server_names = ['quad9-doh-ip4-port443-nofilter-ecs-pri', 'quad9-doh-ip4-port443-nofilter-pri']
+listen_addresses = ['127.0.0.1:5533']
+doh_servers = true
+fallback_resolvers = ['9.9.9.9:53']
+
+cache = true
+cache_size = 4096
+cache_min_ttl = 2400
+cache_max_ttl = 86400
+cache_neg_max_ttl = 600
+
+[static]
+  [static.'quad9-doh-ip4-port443-nofilter-ecs-pri']
+  stamp = 'sdns://AgYAAAAAAAAACDkuOS45LjEyILAZIHRLu3bJqwU-AeB7fgUORz0g95976kNfr-Q8nSQvE2RuczEyLnF1YWQ5Lm5ldDo0NDMKL2Rucy1xdWVyeQ'
+  [static.'quad9-doh-ip4-port443-nofilter-pri']
+  stamp = 'sdns://AgYAAAAAAAAACDkuOS45LjEwILAZIHRLu3bJqwU-AeB7fgUORz0g95976kNfr-Q8nSQvE2RuczEwLnF1YWQ5Lm5ldDo0NDMKL2Rucy1xdWVyeQ'

@@ -1,6 +1,7 @@
 services:
   redsocks:
-    image: mietzen/redsocks-proxy:stable
+    #image: mietzen/redsocks-proxy:stable
+    build: .
     hostname: redsocks
     cap_add:
       - NET_ADMIN

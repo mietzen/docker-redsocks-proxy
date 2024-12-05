@@ -28,6 +28,8 @@ if [ -z "$PROXY_SERVER" ] || [ -z "$PROXY_PORT" ]; then
     exit 1
 fi
 
+dnscrypt-proxy -syslog -config /etc/dnscrypt-proxy/dnscrypt-proxy.toml &
+
 # Generate the configuration file
 echo "Generating Redsocks configuration..."
 envsubst < /etc/redsocks.conf.template > /etc/redsocks.conf
@@ -46,8 +48,24 @@ sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks
 echo "Restarting Redsocks and configuring iptables..."
 /etc/init.d/redsocks restart
 
-iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port "$LOCAL_PORT"
-iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDIRECT --to-port "$LOCAL_PORT"
+# Create the REDSOCKS chain for TCP traffic
+iptables -t nat -N REDSOCKS
+
+# Exclude private/local IP ranges from redirection
+iptables -t nat -A REDSOCKS -d 10.0.0.0/8 -j RETURN
+iptables -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN
+iptables -t nat -A REDSOCKS -d 172.16.0.0/12 -j RETURN
+iptables -t nat -A REDSOCKS -d 192.168.0.0/16 -j RETURN
+
+# Redirect all other TCP traffic to port 12345
+iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-port "$LOCAL_PORT"
+
+# Apply the REDSOCKS chain to OUTPUT
+iptables -t nat -A OUTPUT -p tcp -j REDSOCKS
+
+# Redirect all UDP port 53 traffic to port 5533
+iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-port 5533
+iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5533
 
 echo "Container IP Address: $(curl -sSL https://v4.ident.me)"
-tail -f "$LOG_FILE"
+tcpdump -i any port 443 -l
