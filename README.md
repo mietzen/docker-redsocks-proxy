@@ -159,6 +159,10 @@ services:
     restart: unless-stopped
 ```
 
+### Misc
+
+- [**Route more / other / all TCP Ports**](https://github.com/mietzen/docker-redsocks-proxy/issues/11#issuecomment-2520509992)
+
 **Sources:**
 - [PXke's blog: Using redsocks to proxy a docker container traffic](https://web.archive.org/web/20240302223218/https://blog.pxke.me/redsocksdocker.html)
 - [SO-Answer from marlar: How to make docker container connect everything through proxy](https://stackoverflow.com/a/71099635)
