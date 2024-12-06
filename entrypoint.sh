@@ -36,7 +36,7 @@ is_valid_port() {
 }
 
 setup_dnscrypt() {
-    echo " ---- DNSCRYPT ----- "
+    echo "---- DNSCRYPT -----"
     if [[ $DNSCrypt_Active == true ]]; then
         echo "Generating DNSCrypt configuration"
         echo "Servers: $DOH_SERVERS"
@@ -76,7 +76,7 @@ setup_dnscrypt() {
 }
 
 configure_iptables() {
-    echo " ---- FIREWALL ----- "
+    echo "---- FIREWALL -----"
     echo "Generating firewall rules"
     iptables -t nat -N REDSOCKS
     if [[ ! $PROXY_SERVER =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -125,7 +125,7 @@ configure_iptables() {
 }
 
 setup_redsocks() {
-    echo " ---- REDSOCKS ----- "
+    echo "---- REDSOCKS -----"
     if [ -z "$PROXY_SERVER" ] || [ -z "$PROXY_PORT" ]; then
         echo "Error: PROXY_SERVER and PROXY_PORT must be set."
         exit 1
@@ -145,21 +145,28 @@ setup_redsocks() {
     echo ""
 }
 
-echo "--- Starting initial setup ---"
+echo "============= Initial Setup ============="
+echo ""
 setup_dnscrypt
 setup_redsocks
 configure_iptables
-echo " --- Finished initial setup ---"
 echo ""
-echo " ---- LOG ----- "
+echo "================== Log =================="
+echo ""
 exec 3</var/log/redsocks.log
 exec 4</var/log/dnscrypt-proxy.log
 while true; do
     if read -r line <&3; then
-        echo "redsocks: $line"
+        timestamp=$(echo "$line" | awk '{print $1}')
+        log_level=$(echo "$line" | awk '{print $2}' | tr 'a-z' 'A-Z')
+        formatted_date=$(date -d @$timestamp '+[%Y-%m-%d %H:%M:%S]')
+        padded_log_level="[$log_level]"
+        padded_log_level=$(printf "%-8s" "$padded_log_level")  # Pad to ensure total width of 9 characters (6 chars + 3 spaces)
+        echo "[Redsocks] $formatted_date $padded_log_level ${line#* * }"
     fi
     if read -r line <&4; then
-        echo "dnscrypt: $line"
+        # Output the dnscrypt log line as is
+        echo "[DNSCrypt] $line"
     fi
     sleep 0.1
 done
