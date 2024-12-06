@@ -42,7 +42,8 @@ services:
   debian:
     image: mietzen/debian-curl-jq:stable
     depends_on:
-      - redsocks
+      redsocks:
+        condition: service_healthy
     network_mode: service:redsocks
     command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
     restart: unless-stopped

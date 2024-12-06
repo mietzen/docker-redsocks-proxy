@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
         jq \
         sipcalc \
         dnsutils \
+        procps \
         gettext-base \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=dnscrypt /go/source/dnscrypt-proxy/dnscrypt-proxy /usr/sbin/dnscrypt-proxy
@@ -23,3 +24,5 @@ COPY redsocks.conf.template /etc/redsocks.conf.template
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT /bin/bash /entrypoint.sh
+HEALTHCHECK --interval=10s --timeout=30s --start-period=5s --retries=3 \
+        CMD /usr/bin/pgrep redsocks && /usr/bin/pgrep dnscrypt-proxy
