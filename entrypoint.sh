@@ -68,7 +68,7 @@ setup_dnscrypt() {
 
         envsubst < /etc/dnscrypt-proxy.toml.template > /etc/dnscrypt-proxy.toml
         echo "DNSCrypt configuration:"
-        cat /etc/dnscrypt-proxy.toml | sed 's/^/    /'
+        cat /etc/dnscrypt-proxy.toml | sed 's/^/  /'
         echo ""
         touch /var/log/dnscrypt-proxy.log
         dnscrypt-proxy -loglevel 2 -logfile /var/log/dnscrypt-proxy.log -config /etc/dnscrypt-proxy.toml &
@@ -105,12 +105,16 @@ configure_iptables() {
         echo "Redirecting all TCP traffic"
         iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-port "$LOCAL_PORT"
     else
-        echo "$REDIRECT_PORTS" | xargs -n 1 | while read port; do
-            if is_valid_port "$port"; then
-                echo "Redirecting port: $port"
-                iptables -t nat -A REDSOCKS -p tcp --dport "$port" -j REDIRECT --to-port "$LOCAL_PORT"
+        REDIRECT_PORTS=$(echo "$REDIRECT_PORTS" | sed 's/[[:space:]]//g')
+        IFS=',' read -ra PORTS <<< "$REDIRECT_PORTS"
+        echo "Redirecting TCP Ports:"
+        for PORT in "${PORTS[@]}"; do
+            if is_valid_port "$PORT"; then
+                echo "  - $PORT"
+                iptables -t nat -A REDSOCKS -p tcp --dport "$PORT" -j REDIRECT --to-port "$LOCAL_PORT"
             else
-                echo "Invalid port: $port (skipping)"
+                echo "Invalid port: $PORT"
+                exit 1
             fi
         done
     fi
@@ -138,7 +142,7 @@ setup_redsocks() {
         sed -i '/password = /d' /etc/redsocks.conf
     fi
     echo "Redsocks configuration (sensitive data redacted):"
-    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks.conf | sed 's/^/    /'
+    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks.conf | sed 's/^/  /'
     echo ""
     echo "Restarting redsocks"
     /etc/init.d/redsocks restart > /dev/null
@@ -150,7 +154,6 @@ echo ""
 setup_dnscrypt
 setup_redsocks
 configure_iptables
-echo ""
 echo "================== Log =================="
 echo ""
 exec 3</var/log/redsocks.log
