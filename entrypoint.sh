@@ -92,11 +92,7 @@ configure_iptables() {
 
     if [[ $ALLOW_DOCKER_CIDR == true ]]; then
         echo "Whitelisting docker network"
-        network_info=$(sipcalc eth0 | grep -E 'Network address|Network mask \(bits\)' | awk -F'- ' '{print $2}')
-        network_address=$(echo "$network_info" | head -n 1)
-        subnet_bits=$(echo "$network_info" | tail -n 1)
-        DOCKER_CIDR="$network_address/$subnet_bits"
-
+        DOCKER_CIDR=$(sipcalc eth0 | grep -E 'Network address|Network mask \(bits\)' | awk -F'- ' '{print $2}' | paste -sd '/' -)
         echo "  Docker CIDR: $DOCKER_CIDR"
         iptables -t nat -A REDSOCKS -d ${DOCKER_CIDR} -j RETURN
     fi
