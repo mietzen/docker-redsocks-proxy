@@ -1,17 +1,25 @@
-FROM debian:stable-20241202
+FROM golang:1.23-bookworm AS dnscrypt
+ARG DNSCRYPT_VERSION=2.1.5
 
-COPY pinning.pref /etc/apt/preferences.d/pinning.pref
+RUN mkdir source
+ADD https://github.com/DNSCrypt/dnscrypt-proxy/archive/refs/tags/${DNSCRYPT_VERSION}.tar.gz ./dnscrypt-proxy.tar.gz
+RUN tar --strip-components=1 -xf dnscrypt-proxy.tar.gz -C /go/source
+WORKDIR source/dnscrypt-proxy
+RUN go clean && CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w"
+
+FROM debian:bookworm-20241202
 RUN apt-get update && apt-get install -y \
         iptables \
         redsocks \
         curl \
-        tcpdump \
-        gettext-base
-RUN echo "deb https://deb.debian.org/debian/ testing main" | tee /etc/apt/sources.list.d/testing.list \
-    && apt-get update && apt-get install -t testing -y \
-        dnscrypt-proxy \
+        jq \
+        sipcalc \
+        dnsutils \
+        gettext-base \
     && rm -rf /var/lib/apt/lists/*
-COPY entrypoint.sh /entrypoint.sh
-COPY dnscrypt-proxy.toml /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+COPY --from=dnscrypt /go/source/dnscrypt-proxy/dnscrypt-proxy /usr/sbin/dnscrypt-proxy
+COPY dnscrypt-proxy.toml.template /etc/dnscrypt-proxy.toml.template
 COPY redsocks.conf.template /etc/redsocks.conf.template
+
+COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT /bin/bash /entrypoint.sh
