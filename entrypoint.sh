@@ -4,7 +4,7 @@ set -eo pipefail
 
 # Variables
 # DNSCrypt
-DNSCrypt_Active=${DNSCrypt_Active:-'true'}
+export DNSCrypt_Active=${DNSCrypt_Active:-'true'}
 DOH_SERVERS=${DOH_SERVERS:-"quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri"}
 export FALL_BACK_DNS="'${FALL_BACK_DNS:-9.9.9.9}:53'"
 # FIREWALL
@@ -36,39 +36,39 @@ is_valid_port() {
 }
 
 setup_dnscrypt() {
-    echo "---- DNSCRYPT -----"
     if [[ $DNSCrypt_Active == true ]]; then
-        echo "Generating DNSCrypt configuration"
-        echo "Servers: $DOH_SERVERS"
+        echo "DNSCrypt:"
+        echo "  - Generating DNSCrypt configuration"
+        echo "  - Servers: $DOH_SERVERS"
 
         RESOLVERS_JSON=$(curl -s https://download.dnscrypt.info/dnscrypt-resolvers/json/public-resolvers.json)
         DOH_SERVERS=$(echo "$DOH_SERVERS" | sed 's/[[:space:]]//g')
         STATIC_BUFFER=""
         IFS=',' read -ra SERVERS <<< "$DOH_SERVERS"
-        echo "Querying dns static stamps:"
+        echo "  - Querying dns static stamps:"
         for SERVER in "${SERVERS[@]}"; do
             SERVER=$(echo "$SERVER" | xargs) # Trim spaces
             STAMP=$(echo "$RESOLVERS_JSON" | jq -r ".[] | select(.name == \"$SERVER\") | .stamp")
             if [[ -n "$STAMP" ]]; then
-                echo "  Found stamp for server $SERVER"
+                echo "    - Found stamp for server $SERVER"
                 STATIC_BUFFER+="  [static.'$SERVER']\n"
                 STATIC_BUFFER+="  stamp = '$STAMP'\n"
             else
-                echo "  Warning: Stamp not found for server $SERVER" >&2
+                echo "    - Warning: Stamp not found for server $SERVER" >&2
             fi
         done
         if [[ -n "$STATIC_BUFFER" ]]; then
             echo "[static]" >> /etc/dnscrypt-proxy.toml.template
             echo -e "$STATIC_BUFFER" >> /etc/dnscrypt-proxy.toml.template
         else
-            echo "  No valid stamps found; skipping [static] block."
+            echo "    - No valid stamps found; skipping [static] block."
         fi
 
         export DOH_SERVERS=$(echo "$DOH_SERVERS" | sed "s/\([^,]*\)/'\1'/g" | sed 's/,/, /g')
 
         envsubst < /etc/dnscrypt-proxy.toml.template > /etc/dnscrypt-proxy.toml
-        echo "DNSCrypt configuration:"
-        cat /etc/dnscrypt-proxy.toml | sed 's/^/  /'
+        echo "   - DNSCrypt configuration:"
+        sed 's/^/      /' /etc/dnscrypt-proxy.toml
         echo ""
         touch /var/log/dnscrypt-proxy.log
         dnscrypt-proxy -loglevel 2 -logfile /var/log/dnscrypt-proxy.log -config /etc/dnscrypt-proxy.toml &
@@ -76,40 +76,41 @@ setup_dnscrypt() {
 }
 
 configure_iptables() {
-    echo "---- FIREWALL -----"
-    echo "Generating firewall rules"
+    echo "Firewall:"
+    echo "  - Generating firewall rules"
     iptables -t nat -N REDSOCKS
     if [[ ! $PROXY_SERVER =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         PROXY_IP=$(dig +short ${PROXY_SERVER} | head -n1)
     else
         PROXY_IP=$PROXY_SERVER
     fi
-    echo "Whitelisting proxy server"
-    echo "  Proxy IP: $PROXY_IP"
+    echo "  - Whitelisting proxy server"
+    echo "    - Proxy IP: $PROXY_IP"
 
     iptables -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A REDSOCKS -p tcp -d ${PROXY_IP} --dport ${PROXY_PORT} -j RETURN
 
     if [[ $ALLOW_DOCKER_CIDR == true ]]; then
-        echo "Whitelisting docker network"
+        echo "  - Whitelisting docker network"
         DOCKER_CIDR=$(sipcalc eth0 | grep -E 'Network address|Network mask \(bits\)' | awk -F'- ' '{print $2}' | paste -sd '/' -)
-        echo "  Docker CIDR: $DOCKER_CIDR"
+        echo "    - Docker CIDR: $DOCKER_CIDR"
         iptables -t nat -A REDSOCKS -d ${DOCKER_CIDR} -j RETURN
     fi
 
     if [[ $REDIRECT_PORTS == "all" ]]; then
-        echo "Redirecting all TCP traffic"
+        echo "  - Redirecting all TCP traffic"
         iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-port "$LOCAL_PORT"
     else
         REDIRECT_PORTS=$(echo "$REDIRECT_PORTS" | sed 's/[[:space:]]//g')
         IFS=',' read -ra PORTS <<< "$REDIRECT_PORTS"
-        echo "Redirecting TCP Ports:"
+        echo "  - Redirecting TCP Ports:"
         for PORT in "${PORTS[@]}"; do
             if is_valid_port "$PORT"; then
-                echo "  - $PORT"
+                echo "    - $PORT"
                 iptables -t nat -A REDSOCKS -p tcp --dport "$PORT" -j REDIRECT --to-port "$LOCAL_PORT"
             else
-                echo "Invalid port: $PORT"
+                echo ""
+                echo "Error: Invalid port: $PORT"
                 exit 1
             fi
         done
@@ -125,22 +126,23 @@ configure_iptables() {
 }
 
 setup_redsocks() {
-    echo "---- REDSOCKS -----"
+    echo "Redsocks:"
     if [ -z "$PROXY_SERVER" ] || [ -z "$PROXY_PORT" ]; then
+        echo ""
         echo "Error: PROXY_SERVER and PROXY_PORT must be set."
         exit 1
     fi
-    echo "Generating Redsocks configuration"
+    echo "  - Generating Redsocks configuration"
     envsubst < /etc/redsocks.conf.template > /etc/redsocks.conf
     # Remove both login and password if either is unset
     if [ -z "$LOGIN" ] || [ -z "$PASSWORD" ]; then
         sed -i '/login = /d' /etc/redsocks.conf
         sed -i '/password = /d' /etc/redsocks.conf
     fi
-    echo "Redsocks configuration (sensitive data redacted):"
-    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks.conf | sed 's/^/  /'
+    echo "  - Redsocks configuration (sensitive data redacted):"
+    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks.conf | sed 's/^/      /'
     echo ""
-    echo "Restarting redsocks"
+    echo "  - Restarting redsocks"
     /etc/init.d/redsocks restart > /dev/null
     echo ""
 }
@@ -153,7 +155,9 @@ configure_iptables
 echo "================== Log =================="
 echo ""
 exec 3</var/log/redsocks.log
-exec 4</var/log/dnscrypt-proxy.log
+if [[ $DNSCrypt_Active == true ]]; then
+    exec 4</var/log/dnscrypt-proxy.log
+fi
 while true; do
     if read -r line <&3; then
         timestamp=$(echo "$line" | awk '{print $1}')
@@ -163,9 +167,10 @@ while true; do
         padded_log_level=$(printf "%-8s" "$padded_log_level")  # Pad to ensure total width of 9 characters (6 chars + 3 spaces)
         echo "[Redsocks] $formatted_date $padded_log_level ${line#* * }"
     fi
-    if read -r line <&4; then
-        # Output the dnscrypt log line as is
-        echo "[DNSCrypt] $line"
+    if [[ $DNSCrypt_Active == true ]]; then
+        if read -r line <&4; then
+            echo "[DNSCrypt] $line"
+        fi
     fi
     sleep 0.1
 done
