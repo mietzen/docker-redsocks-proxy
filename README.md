@@ -1,6 +1,6 @@
 # Docker Redsocks Proxy
 
-With this container, you can redirect all HTTP and HTTPS traffic through a SOCKS5 proxy, with optional DNSCrypt integration for secure DNS resolution.
+With this container, you can redirect all TCP traffic through a SOCKS5 proxy, with optional DNSCrypt integration for secure DNS resolution.
 
 ## Features:
 
