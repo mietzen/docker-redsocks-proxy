@@ -65,23 +65,25 @@ services:
 ```
 
 ```shell
-redsocks-1  |  ---- LOG ----- 
-redsocks-1  | redsocks: 1733504030.676659 notice main.c:165 main(...) redsocks started, conn_max=393216
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] dnscrypt-proxy 2.1.5
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Network connectivity detected
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Now listening to 127.0.0.1:5533 [UDP]
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Now listening to 127.0.0.1:5533 [TCP]
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Firefox workaround initialized
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] [quad9-doh-ip4-port443-nofilter-ecs-pri] OK (DoH) - rtt: 30ms
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] [quad9-doh-ip4-port443-nofilter-pri] OK (DoH) - rtt: 34ms
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Sorted latencies:
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] -    30ms quad9-doh-ip4-port443-nofilter-ecs-pri
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] -    34ms quad9-doh-ip4-port443-nofilter-pri
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] Server with the lowest initial latency: quad9-doh-ip4-port443-nofilter-ecs-pri (rtt: 30ms)
-redsocks-1  | dnscrypt: [2024-12-06 16:53:50] [NOTICE] dnscrypt-proxy is ready - live servers: 2
-redsocks-1  | redsocks: 1733504035.663519 info redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:46086->45.83.223.233:443]: accepted
+redsocks-1  | ================== Log ==================
+redsocks-1  | 
+redsocks-1  | [Redsocks] [2024-12-06 19:29:24] [NOTICE] main.c:165 main(...) redsocks started, conn_max=393216
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] dnscrypt-proxy 2.1.5
+redsocks-1  | [Redsocks] [2024-12-06 19:29:24] [INFO]   redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:47174->149.112.112.12:443]: accepted
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] Network connectivity detected
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] Now listening to 127.0.0.1:5533 [UDP]
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] Now listening to 127.0.0.1:5533 [TCP]
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] Firefox workaround initialized
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] [quad9-doh-ip4-port443-nofilter-pri] OK (DoH) - rtt: 26ms
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] [quad9-doh-ip4-port443-nofilter-ecs-pri] OK (DoH) - rtt: 38ms
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] Sorted latencies:
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:24] [NOTICE] -    26ms quad9-doh-ip4-port443-nofilter-pri
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] -    38ms quad9-doh-ip4-port443-nofilter-ecs-pri
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] Server with the lowest initial latency: quad9-doh-ip4-port443-nofilter-pri (rtt: 26ms)
+redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] dnscrypt-proxy is ready - live servers: 2
+redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:57850->45.83.223.233:443]: accepted
 debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
-redsocks-1  | redsocks: 1733504035.945209 info redsocks.c:671 redsocks_drop_client(...) [172.19.0.2:46086->45.83.223.233:443]: connection closed
+redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:671 redsocks_drop_client(...) [172.19.0.2:57850->45.83.223.233:443]: connection closed
 ```
 
 ### Published Ports
