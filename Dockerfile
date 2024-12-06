@@ -24,5 +24,6 @@ COPY redsocks.conf.template /etc/redsocks.conf.template
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT /bin/bash /entrypoint.sh
+COPY healthcheck.sh /healthcheck.sh
 HEALTHCHECK --interval=10s --timeout=30s --start-period=5s --retries=3 \
-        CMD /usr/bin/pgrep redsocks && /usr/bin/pgrep dnscrypt-proxy
+        CMD /bin/bash /healthcheck.sh
