@@ -72,6 +72,7 @@ setup_dnscrypt() {
         echo "  - Starting DNSCrypt"
         su -s /bin/sh -c "/opt/dnscrypt/dnscrypt-proxy -loglevel 2 -logfile /opt/dnscrypt/dnscrypt.log -pidfile /opt/dnscrypt/dnscrypt.pid -config /opt/dnscrypt/dnscrypt-config.toml" dnscrypt &
         chmod 744 /opt/dnscrypt/*.*
+        echo ""
     fi
 }
 
@@ -126,15 +127,16 @@ configure_iptables() {
         echo "  - Limiting UDP Traffic:"
         echo -n "    - Allowing outgoing DNS requests "
         if [[ $DNSCrypt_Active == true ]]; then
-            echo "to DNSCrypt server on local Port 5533 and outgoing on Port 53 as fallback"
+            echo "to DNSCrypt server on local Port 5533 and on Port 53 as fallback"
             iptables -A OUTPUT -o eth0 -p udp --dport 53 -j ACCEPT
             iptables -A OUTPUT -o eth0 -p udp ! --dport 5533 -j DROP
         else
-            echo "outgoing on Port 53"
+            echo "on Port 53"
             iptables -A OUTPUT -o eth0 -p udp ! --dport 53 -j DROP
         fi
         echo "    - Dropping all other outgoing UDP traffic"
     fi
+    echo ""
 }
 
 setup_redsocks() {
@@ -157,16 +159,14 @@ setup_redsocks() {
     echo "  - Starting redsocks"
     su -s /bin/sh -c "/opt/redsocks/redsocks -c /opt/redsocks/redsocks.conf -p /opt/redsocks/redsocks.pid" redsocks &
     chmod 744 /opt/redsocks/*.*
+    echo ""
 }
 
 echo "============= Initial Setup ============="
 echo ""
 setup_dnscrypt
-echo ""
 setup_redsocks
-echo ""
 configure_iptables
-echo ""
 echo "================== Log =================="
 echo ""
 exec 3</opt/redsocks/redsocks.log
