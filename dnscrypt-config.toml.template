@@ -2,8 +2,10 @@ server_names = [$DOH_SERVERS]
 listen_addresses = ['127.0.0.1:5533']
 doh_servers = true
 fallback_resolvers = [$FALL_BACK_DNS]
+
 cache = true
 cache_size = 4096
 cache_min_ttl = 2400
 cache_max_ttl = 86400
 cache_neg_max_ttl = 600
+

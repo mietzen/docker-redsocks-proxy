@@ -25,32 +25,32 @@ services:
       - PROXY_PORT=1080
       # Optional:
       # DNSCrypt:
-      # - DNSCrypt_Active=true
-      # - DOH_SERVERS=quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri # Server-List: https://dnscrypt.info/public-servers/
-      # - FALL_BACK_DNS=9.9.9.9
+      - DNSCrypt_Active=true
+      - DOH_SERVERS=quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri # Server-List: https://dnscrypt.info/public-servers/
+      - FALL_BACK_DNS=9.9.9.9
       # FIREWALL:
-      # - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
-      # - ALLOW_DOCKER_CIDR=true
+      - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
+      - ALLOW_DOCKER_CIDR=true # Allow networking between containers
+      - LIMIT_UDP=true # Drop outgoing UDP traffic (DNS is whitelisted)
       # REDSOCKS:
       # - LOGIN=myuser
       # - PASSWORD=mypass
-      # - LOCAL_IP=127.0.0.1
-      # - LOCAL_PORT=8081
-      # - PROXY_TYPE=socks5
-      # - LOG_DEBUG=off
-      # - LOG_INFO=on
-      # - LOG_FILE=/var/log/redsocks.log
-      # - CONNPRES_IDLE_TIMEOUT=7440
-      # - DISCLOSE_SRC=false
-      # - LISTENQ=128
-      # - MAX_ACCEPT_BACKOFF=60000
-      # - ON_PROXY_FAIL=close
-      # - REDSOCKS_CONN_MAX=500
-      # - RLIMIT_NOFILE=1024
-      # - SPLICE=false
-      # - TCP_KEEPALIVE_INTVL=75
-      # - TCP_KEEPALIVE_PROBES=9
-      # - TCP_KEEPALIVE_TIME=300
+      - LOCAL_IP=127.0.0.1
+      - LOCAL_PORT=8081
+      - PROXY_TYPE=socks5
+      - LOG_DEBUG=off
+      - LOG_INFO=on
+      - CONNPRES_IDLE_TIMEOUT=7440
+      - DISCLOSE_SRC=false
+      - LISTENQ=128
+      - MAX_ACCEPT_BACKOFF=60000
+      - ON_PROXY_FAIL=close
+      - REDSOCKS_CONN_MAX=500
+      - RLIMIT_NOFILE=1024
+      - SPLICE=false
+      - TCP_KEEPALIVE_INTVL=75
+      - TCP_KEEPALIVE_PROBES=9
+      - TCP_KEEPALIVE_TIME=300
     dns: 9.9.9.9 # Optional, but recommended if not using DNSCrypt
     restart: unless-stopped
 
@@ -60,7 +60,7 @@ services:
       redsocks:
         condition: service_healthy
     network_mode: service:redsocks
-    command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $(date '"'"'+[%Y-%m-%d %H:%M:%S]'"'"') [INFO]   $(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
     restart: unless-stopped
 ```
 
@@ -82,7 +82,7 @@ redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] -    38ms quad9-doh-ip4-
 redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] Server with the lowest initial latency: quad9-doh-ip4-port443-nofilter-pri (rtt: 26ms)
 redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] dnscrypt-proxy is ready - live servers: 2
 redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:57850->45.83.223.233:443]: accepted
-debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
+debian-1    | [Deb-cURL] [2024-12-06 19:29:29] [INFO]   You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
 redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:671 redsocks_drop_client(...) [172.19.0.2:57850->45.83.223.233:443]: connection closed
 ```
 

@@ -16,6 +16,7 @@ services:
       # FIREWALL:
       # - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
       # - ALLOW_DOCKER_CIDR=true
+      # - LIMIT_UDP=true
       # REDSOCKS:
       # - LOGIN=myuser
       # - PASSWORD=mypass
@@ -24,7 +25,6 @@ services:
       # - PROXY_TYPE=socks5
       # - LOG_DEBUG=off
       # - LOG_INFO=on
-      # - LOG_FILE=/var/log/redsocks.log
       # - CONNPRES_IDLE_TIMEOUT=7440
       # - DISCLOSE_SRC=false
       # - LISTENQ=128
@@ -45,5 +45,5 @@ services:
       redsocks:
         condition: service_healthy
     network_mode: service:redsocks
-    command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $(date '"'"'+[%Y-%m-%d %H:%M:%S]'"'"') [INFO]   $(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
     restart: unless-stopped
