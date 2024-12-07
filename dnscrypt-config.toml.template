@@ -1,6 +1,7 @@
 server_names = [$DOH_SERVERS]
 listen_addresses = ['127.0.0.1:5533']
 doh_servers = true
+force_tcp = true
 fallback_resolvers = [$FALL_BACK_DNS]
 
 cache = true
