@@ -8,18 +8,15 @@ WORKDIR /build/dnscrypt-proxy
 RUN go clean && CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w"
 
 FROM gcc:bookworm AS redsocks
-ARG REDSOCKS_VERSION=0.5-2
-
-RUN apt-get update && apt-get install -y \
-    libevent-dev \
-    debhelper
+ARG REDSOCKS_VERSION=release-0.5
 
 RUN mkdir /build
-ADD https://salsa.debian.org/debian/redsocks/-/archive/debian/${REDSOCKS_VERSION}/redsocks-debian-${REDSOCKS_VERSION}.tar.gz ./redsocks.tar.gz
+ADD https://github.com/darkk/redsocks/archive/refs/tags/${REDSOCKS_VERSION}.tar.gz ./redsocks.tar.gz
 RUN tar --strip-components=1 -xf redsocks.tar.gz -C /build
 WORKDIR /build
-#RUN git apply ./patches/libevent-2.1-compat.patch
-RUN make all
+ADD https://patch-diff.githubusercontent.com/raw/darkk/redsocks/pull/123.patch libevent-2.1-compat.patch
+RUN git apply libevent-2.1-compat.patch
+RUN make
 
 FROM debian:bookworm-20241202
 RUN apt-get update && apt-get install -y \
@@ -29,7 +26,6 @@ RUN apt-get update && apt-get install -y \
         iptables \
         jq \
         libevent-core-2.1-7 \
-        lsb-base \
         procps \
         sipcalc \
     && rm -rf /var/lib/apt/lists/*
