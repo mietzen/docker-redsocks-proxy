@@ -25,31 +25,31 @@ services:
       - PROXY_PORT=1080
       # Optional:
       # DNSCrypt:
-      # - DNSCrypt_Active=true
-      # - DOH_SERVERS=quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri # Server-List: https://dnscrypt.info/public-servers/
-      # - FALL_BACK_DNS=9.9.9.9
+      - DNSCrypt_Active=true
+      - DOH_SERVERS=quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri # Server-List: https://dnscrypt.info/public-servers/
+      - FALL_BACK_DNS=9.9.9.9
       # FIREWALL:
-      # - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
-      # - ALLOW_DOCKER_CIDR=true
+      - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
+      - ALLOW_DOCKER_CIDR=true
       # REDSOCKS:
       # - LOGIN=myuser
       # - PASSWORD=mypass
-      # - LOCAL_IP=127.0.0.1
-      # - LOCAL_PORT=8081
-      # - PROXY_TYPE=socks5
-      # - LOG_DEBUG=off
-      # - LOG_INFO=on
-      # - CONNPRES_IDLE_TIMEOUT=7440
-      # - DISCLOSE_SRC=false
-      # - LISTENQ=128
-      # - MAX_ACCEPT_BACKOFF=60000
-      # - ON_PROXY_FAIL=close
-      # - REDSOCKS_CONN_MAX=500
-      # - RLIMIT_NOFILE=1024
-      # - SPLICE=false
-      # - TCP_KEEPALIVE_INTVL=75
-      # - TCP_KEEPALIVE_PROBES=9
-      # - TCP_KEEPALIVE_TIME=300
+      - LOCAL_IP=127.0.0.1
+      - LOCAL_PORT=8081
+      - PROXY_TYPE=socks5
+      - LOG_DEBUG=off
+      - LOG_INFO=on
+      - CONNPRES_IDLE_TIMEOUT=7440
+      - DISCLOSE_SRC=false
+      - LISTENQ=128
+      - MAX_ACCEPT_BACKOFF=60000
+      - ON_PROXY_FAIL=close
+      - REDSOCKS_CONN_MAX=500
+      - RLIMIT_NOFILE=1024
+      - SPLICE=false
+      - TCP_KEEPALIVE_INTVL=75
+      - TCP_KEEPALIVE_PROBES=9
+      - TCP_KEEPALIVE_TIME=300
     dns: 9.9.9.9 # Optional, but recommended if not using DNSCrypt
     restart: unless-stopped
 
