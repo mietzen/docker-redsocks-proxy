@@ -60,7 +60,7 @@ services:
       redsocks:
         condition: service_healthy
     network_mode: service:redsocks
-    command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $(date '"'"'+[%Y-%m-%d %H:%M:%S]'"'"') [INFO]   $(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
     restart: unless-stopped
 ```
 
@@ -82,7 +82,7 @@ redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] -    38ms quad9-doh-ip4-
 redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] Server with the lowest initial latency: quad9-doh-ip4-port443-nofilter-pri (rtt: 26ms)
 redsocks-1  | [DNSCrypt] [2024-12-06 19:29:25] [NOTICE] dnscrypt-proxy is ready - live servers: 2
 redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:1243 redsocks_accept_client(...) [172.19.0.2:57850->45.83.223.233:443]: accepted
-debian-1    | You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
+debian-1    | [Deb-cURL] [2024-12-06 19:29:29] [INFO]   You are connected to Mullvad (server de-ber-wg-socks5-005). Your IP address is 193.32.248.181
 redsocks-1  | [Redsocks] [2024-12-06 19:29:29] [INFO]   redsocks.c:671 redsocks_drop_client(...) [172.19.0.2:57850->45.83.223.233:443]: connection closed
 ```
 

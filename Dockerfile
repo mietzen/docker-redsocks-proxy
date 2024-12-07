@@ -29,15 +29,20 @@ RUN apt-get update && apt-get install -y \
         procps \
         sipcalc \
     && rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /opt/dnscrypt-proxy /opt/redsocks
-COPY --from=dnscrypt /build/dnscrypt-proxy/dnscrypt-proxy /opt/dnscrypt-proxy/dnscrypt-proxy
-COPY dnscrypt-proxy.toml.template /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template
+RUN adduser --system --shell /bin/bash --home /opt/redsocks --group --disabled-login redsocks && \
+    adduser --system --shell /bin/bash --home /opt/dnscrypt --group --disabled-login dnscrypt
 
+COPY --from=dnscrypt /build/dnscrypt-proxy/dnscrypt-proxy /opt/dnscrypt/dnscrypt-proxy
+COPY dnscrypt-config.toml.template /opt/dnscrypt/dnscrypt-config.toml.template
 COPY --from=redsocks /build/redsocks /opt/redsocks/redsocks
 COPY redsocks.conf.template /opt/redsocks/redsocks.conf.template
 
+RUN chown -R dnscrypt:dnscrypt /opt/dnscrypt && \
+    chown -R redsocks:redsocks /opt/redsocks
+
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT /bin/bash /entrypoint.sh
+SHELL [ "/bin/bash" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 
 COPY healthcheck.sh /healthcheck.sh
 HEALTHCHECK --interval=10s --timeout=30s --start-period=5s --retries=3 \

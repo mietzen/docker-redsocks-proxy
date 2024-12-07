@@ -5,7 +5,7 @@ set -eo pipefail
 # Variables
 # DNSCrypt
 export DNSCrypt_Active=${DNSCrypt_Active:-'true'}
-DOH_SERVERS=${DOH_SERVERS:-"mullvad-doh, cloudflare"}
+DOH_SERVERS=${DOH_SERVERS:-"quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri"}
 export FALL_BACK_DNS="'${FALL_BACK_DNS:-9.9.9.9}:53'"
 # FIREWALL
 ALLOW_DOCKER_CIDR=${ALLOW_DOCKER_CIDR:-true}
@@ -56,20 +56,21 @@ setup_dnscrypt() {
             fi
         done
         if [[ -n "$STATIC_BUFFER" ]]; then
-            echo "[static]" >> /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template
-            echo -e "$STATIC_BUFFER" >> /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template
+            echo "[static]" >> /opt/dnscrypt/dnscrypt-config.toml.template
+            echo -e "$STATIC_BUFFER" >> /opt/dnscrypt/dnscrypt-config.toml.template
         else
             echo "    - No valid stamps found; skipping [static] block."
         fi
 
         export DOH_SERVERS=$(echo "$DOH_SERVERS" | sed "s/\([^,]*\)/'\1'/g" | sed 's/,/, /g')
 
-        envsubst < /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template > /opt/dnscrypt-proxy/dnscrypt-proxy.toml
+        envsubst < /opt/dnscrypt/dnscrypt-config.toml.template > /opt/dnscrypt/dnscrypt-config.toml
         echo "  - DNSCrypt configuration:"
-        sed 's/^/      /' /opt/dnscrypt-proxy/dnscrypt-proxy.toml
-        touch /opt/dnscrypt-proxy/dnscrypt-proxy.log
+        sed '$d' /opt/dnscrypt/dnscrypt-config.toml | sed 's/^/      /'
+        su -s /bin/sh -c "touch /opt/dnscrypt/dnscrypt.log" dnscrypt
         echo "  - Starting DNSCrypt"
-        /opt/dnscrypt-proxy/dnscrypt-proxy -loglevel 2 -pidfile /opt/dnscrypt-proxy/dnscrypt.pid -config /opt/dnscrypt-proxy/dnscrypt-proxy.toml &> /opt/dnscrypt-proxy/dnscrypt-proxy.log &
+        su -s /bin/sh -c "/opt/dnscrypt/dnscrypt-proxy -loglevel 2 -logfile /opt/dnscrypt/dnscrypt.log -pidfile /opt/dnscrypt/dnscrypt.pid -config /opt/dnscrypt/dnscrypt-config.toml" dnscrypt &
+        chmod 744 /opt/dnscrypt/*.*
     fi
 }
 
@@ -120,7 +121,6 @@ configure_iptables() {
         iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-port 5533
         iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5533
     fi
-    echo ""
 }
 
 setup_redsocks() {
@@ -138,23 +138,26 @@ setup_redsocks() {
         sed -i '/password = /d' /opt/redsocks/redsocks.conf
     fi
     echo "  - Redsocks configuration (sensitive data redacted):"
-    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /opt/redsocks/redsocks.conf | sed 's/^/      /'
-    echo ""
+    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /opt/redsocks/redsocks.conf | sed '$d' | sed 's/^/      /'
+    su -s /bin/sh -c "touch /opt/redsocks/redsocks.log" redsocks
     echo "  - Starting redsocks"
-    /opt/redsocks/redsocks -c /opt/redsocks/redsocks.conf -p /opt/redsocks/redsocks.pid &> /opt/redsocks/redsocks.log &
-    echo ""
+    su -s /bin/sh -c "/opt/redsocks/redsocks -c /opt/redsocks/redsocks.conf -p /opt/redsocks/redsocks.pid" redsocks &
+    chmod 744 /opt/redsocks/*.*
 }
 
 echo "============= Initial Setup ============="
 echo ""
 setup_dnscrypt
+echo ""
 setup_redsocks
+echo ""
 configure_iptables
+echo ""
 echo "================== Log =================="
 echo ""
 exec 3</opt/redsocks/redsocks.log
 if [[ $DNSCrypt_Active == true ]]; then
-    exec 4</opt/dnscrypt-proxy/dnscrypt-proxy.log
+    exec 4</opt/dnscrypt/dnscrypt.log
 fi
 while true; do
     if read -r line <&3; then
@@ -170,5 +173,5 @@ while true; do
             echo "[DNSCrypt] $line"
         fi
     fi
-    sleep 0.5
+    sleep 0.1
 done

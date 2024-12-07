@@ -1,9 +1,11 @@
 base {
     daemon = off;
     redirector = iptables;
+    user = redsocks;
+    group = redsocks;
     log_debug = $LOG_DEBUG;
     log_info = $LOG_INFO;
-    log = stderr;
+    log = "file:/opt/redsocks/redsocks.log";
     tcp_keepalive_time = $TCP_KEEPALIVE_TIME;
     tcp_keepalive_probes = $TCP_KEEPALIVE_PROBES;
     tcp_keepalive_intvl = $TCP_KEEPALIVE_INTVL;
