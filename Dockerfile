@@ -1,4 +1,4 @@
-FROM golang:1.23-bookworm AS dnscrypt
+FROM golang:1-bookworm AS dnscrypt
 ARG DNSCRYPT_VERSION=2.1.5
 
 RUN mkdir /build
