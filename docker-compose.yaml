@@ -1,6 +1,7 @@
 services:
   redsocks:
-    image: mietzen/redsocks-proxy:stable
+    #image: mietzen/redsocks-proxy:stable
+    build: .
     hostname: redsocks
     cap_add:
       - NET_ADMIN
@@ -24,7 +25,6 @@ services:
       # - PROXY_TYPE=socks5
       # - LOG_DEBUG=off
       # - LOG_INFO=on
-      # - LOG_FILE=/var/log/redsocks.log
       # - CONNPRES_IDLE_TIMEOUT=7440
       # - DISCLOSE_SRC=false
       # - LISTENQ=128
@@ -45,5 +45,5 @@ services:
       redsocks:
         condition: service_healthy
     network_mode: service:redsocks
-    command: /bin/bash -c "while true; do curl -sSL https://am.i.mullvad.net/connected && sleep 10; done"
+    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
     restart: unless-stopped

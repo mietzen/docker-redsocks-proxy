@@ -5,7 +5,7 @@ set -eo pipefail
 # Variables
 # DNSCrypt
 export DNSCrypt_Active=${DNSCrypt_Active:-'true'}
-DOH_SERVERS=${DOH_SERVERS:-"quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri"}
+DOH_SERVERS=${DOH_SERVERS:-"mullvad-doh, cloudflare"}
 export FALL_BACK_DNS="'${FALL_BACK_DNS:-9.9.9.9}:53'"
 # FIREWALL
 ALLOW_DOCKER_CIDR=${ALLOW_DOCKER_CIDR:-true}
@@ -13,8 +13,6 @@ REDIRECT_PORTS=${REDIRECT_PORTS:-'all'}
 # REDSOCKS
 export LOG_DEBUG=${LOG_DEBUG:-off}
 export LOG_INFO=${LOG_INFO:-on}
-export LOG_FILE="${LOG_FILE:-/var/log/redsocks.log}"
-export LOG="\"file:${LOG_FILE}\""
 export LOCAL_IP=${LOCAL_IP:-127.0.0.1}
 export LOCAL_PORT=${LOCAL_PORT:-8081}
 export PROXY_TYPE=${PROXY_TYPE:-socks5}
@@ -54,24 +52,24 @@ setup_dnscrypt() {
                 STATIC_BUFFER+="  [static.'$SERVER']\n"
                 STATIC_BUFFER+="  stamp = '$STAMP'\n"
             else
-                echo "    - Warning: Stamp not found for server $SERVER" >&2
+                echo "    - Warning: Stamp not found for server $SERVER"
             fi
         done
         if [[ -n "$STATIC_BUFFER" ]]; then
-            echo "[static]" >> /etc/dnscrypt-proxy.toml.template
-            echo -e "$STATIC_BUFFER" >> /etc/dnscrypt-proxy.toml.template
+            echo "[static]" >> /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template
+            echo -e "$STATIC_BUFFER" >> /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template
         else
             echo "    - No valid stamps found; skipping [static] block."
         fi
 
         export DOH_SERVERS=$(echo "$DOH_SERVERS" | sed "s/\([^,]*\)/'\1'/g" | sed 's/,/, /g')
 
-        envsubst < /etc/dnscrypt-proxy.toml.template > /etc/dnscrypt-proxy.toml
-        echo "   - DNSCrypt configuration:"
-        sed 's/^/      /' /etc/dnscrypt-proxy.toml
-        echo ""
-        touch /var/log/dnscrypt-proxy.log
-        dnscrypt-proxy -loglevel 2 -logfile /var/log/dnscrypt-proxy.log -config /etc/dnscrypt-proxy.toml &
+        envsubst < /opt/dnscrypt-proxy/dnscrypt-proxy.toml.template > /opt/dnscrypt-proxy/dnscrypt-proxy.toml
+        echo "  - DNSCrypt configuration:"
+        sed 's/^/      /' /opt/dnscrypt-proxy/dnscrypt-proxy.toml
+        touch /opt/dnscrypt-proxy/dnscrypt-proxy.log
+        echo "  - Starting DNSCrypt"
+        /opt/dnscrypt-proxy/dnscrypt-proxy -loglevel 2 -pidfile /opt/dnscrypt-proxy/dnscrypt.pid -config /opt/dnscrypt-proxy/dnscrypt-proxy.toml &> /opt/dnscrypt-proxy/dnscrypt-proxy.log &
     fi
 }
 
@@ -133,17 +131,17 @@ setup_redsocks() {
         exit 1
     fi
     echo "  - Generating Redsocks configuration"
-    envsubst < /etc/redsocks.conf.template > /etc/redsocks.conf
+    envsubst < /opt/redsocks/redsocks.conf.template > /opt/redsocks/redsocks.conf
     # Remove both login and password if either is unset
     if [ -z "$LOGIN" ] || [ -z "$PASSWORD" ]; then
-        sed -i '/login = /d' /etc/redsocks.conf
-        sed -i '/password = /d' /etc/redsocks.conf
+        sed -i '/login = /d' /opt/redsocks/redsocks.conf
+        sed -i '/password = /d' /opt/redsocks/redsocks.conf
     fi
     echo "  - Redsocks configuration (sensitive data redacted):"
-    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /etc/redsocks.conf | sed 's/^/      /'
+    sed -e 's/\(login = \).*/\1***;/' -e 's/\(password = \).*/\1***;/' /opt/redsocks/redsocks.conf | sed 's/^/      /'
     echo ""
-    echo "  - Restarting redsocks"
-    /etc/init.d/redsocks restart > /dev/null
+    echo "  - Starting redsocks"
+    /opt/redsocks/redsocks -c /opt/redsocks/redsocks.conf -p /opt/redsocks/redsocks.pid &> /opt/redsocks/redsocks.log &
     echo ""
 }
 
@@ -154,9 +152,9 @@ setup_redsocks
 configure_iptables
 echo "================== Log =================="
 echo ""
-exec 3</var/log/redsocks.log
+exec 3</opt/redsocks/redsocks.log
 if [[ $DNSCrypt_Active == true ]]; then
-    exec 4</var/log/dnscrypt-proxy.log
+    exec 4</opt/dnscrypt-proxy/dnscrypt-proxy.log
 fi
 while true; do
     if read -r line <&3; then
@@ -172,5 +170,5 @@ while true; do
             echo "[DNSCrypt] $line"
         fi
     fi
-    sleep 0.1
+    sleep 0.5
 done
