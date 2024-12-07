@@ -10,6 +10,7 @@ export FALL_BACK_DNS="'${FALL_BACK_DNS:-9.9.9.9}:53'"
 # FIREWALL
 ALLOW_DOCKER_CIDR=${ALLOW_DOCKER_CIDR:-true}
 REDIRECT_PORTS=${REDIRECT_PORTS:-'all'}
+LIMIT_UDP=${LIMIT_UDP:-true}
 # REDSOCKS
 export LOG_DEBUG=${LOG_DEBUG:-off}
 export LOG_INFO=${LOG_INFO:-on}
@@ -120,6 +121,19 @@ configure_iptables() {
     if [[ $DNSCrypt_Active == true ]]; then
         iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-port 5533
         iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5533
+    fi
+    if [[ $LIMIT_UDP == true ]]; then
+        echo "  - Limiting UDP Traffic:"
+        echo -n "    - Allowing outgoing DNS requests "
+        if [[ $DNSCrypt_Active == true ]]; then
+            echo "to DNSCrypt server on local Port 5533 and outgoing on Port 53 as fallback"
+            iptables -A OUTPUT -o eth0 -p udp --dport 53 -j ACCEPT
+            iptables -A OUTPUT -o eth0 -p udp ! --dport 5533 -j DROP
+        else
+            echo "outgoing on Port 53"
+            iptables -A OUTPUT -o eth0 -p udp ! --dport 53 -j DROP
+        fi
+        echo "    - Dropping all other outgoing UDP traffic"
     fi
 }
 
