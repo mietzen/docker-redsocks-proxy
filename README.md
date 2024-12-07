@@ -39,7 +39,6 @@ services:
       # - PROXY_TYPE=socks5
       # - LOG_DEBUG=off
       # - LOG_INFO=on
-      # - LOG_FILE=/var/log/redsocks.log
       # - CONNPRES_IDLE_TIMEOUT=7440
       # - DISCLOSE_SRC=false
       # - LISTENQ=128
