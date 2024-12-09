@@ -1,4 +1,4 @@
-server_names = [$DOH_SERVERS]
+server_names = [$DOH_SERVER_LIST]
 listen_addresses = ['127.0.0.1:5533']
 doh_servers = true
 force_tcp = true

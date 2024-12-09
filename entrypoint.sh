@@ -42,6 +42,9 @@ setup_dnscrypt() {
 
         RESOLVERS_JSON=$(curl -s https://download.dnscrypt.info/dnscrypt-resolvers/json/public-resolvers.json)
         DOH_SERVERS=$(echo "$DOH_SERVERS" | sed 's/[[:space:]]//g')
+        export DOH_SERVER_LIST=$(echo "$DOH_SERVERS" | sed "s/\([^,]*\)/'\1'/g" | sed 's/,/, /g')
+        envsubst < /opt/dnscrypt/dnscrypt-config.toml.template > /opt/dnscrypt/dnscrypt-config.toml
+
         STATIC_BUFFER=""
         IFS=',' read -ra SERVERS <<< "$DOH_SERVERS"
         echo "  - Querying dns static stamps:"
@@ -57,15 +60,13 @@ setup_dnscrypt() {
             fi
         done
         if [[ -n "$STATIC_BUFFER" ]]; then
-            echo "[static]" >> /opt/dnscrypt/dnscrypt-config.toml.template
-            echo -e "$STATIC_BUFFER" >> /opt/dnscrypt/dnscrypt-config.toml.template
+            echo "[static]" >> /opt/dnscrypt/dnscrypt-config.toml
+            echo -e "$STATIC_BUFFER" >> /opt/dnscrypt/dnscrypt-config.toml
         else
             echo "    - No valid stamps found; skipping [static] block."
         fi
 
-        export DOH_SERVERS=$(echo "$DOH_SERVERS" | sed "s/\([^,]*\)/'\1'/g" | sed 's/,/, /g')
 
-        envsubst < /opt/dnscrypt/dnscrypt-config.toml.template > /opt/dnscrypt/dnscrypt-config.toml
         echo "  - DNSCrypt configuration:"
         sed '$d' /opt/dnscrypt/dnscrypt-config.toml | sed 's/^/      /'
         su -s /bin/sh -c "touch /opt/dnscrypt/dnscrypt.log" dnscrypt
