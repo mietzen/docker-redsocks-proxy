@@ -18,7 +18,7 @@ ADD https://patch-diff.githubusercontent.com/raw/darkk/redsocks/pull/123.patch l
 RUN git apply libevent-2.1-compat.patch
 RUN make
 
-FROM debian:bookworm-20241202
+FROM debian:bookworm-20241223
 RUN apt-get update && apt-get install -y \
         curl \
         dnsutils \
