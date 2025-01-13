@@ -45,5 +45,5 @@ services:
       redsocks:
         condition: service_healthy
     network_mode: service:redsocks
-    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $(date '"'"'+[%Y-%m-%d %H:%M:%S]'"'"') [INFO]   $(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
+    command: /bin/bash -c 'while true; do echo "[Deb-cURL] $$(date '"'"'+[%Y-%m-%d %H:%M:%S]'"'"') [INFO]   $$(curl -sSL https://am.i.mullvad.net/connected)" && sleep 10; done'
     restart: unless-stopped
