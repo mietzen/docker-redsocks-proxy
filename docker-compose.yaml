@@ -22,6 +22,7 @@ services:
       # - PASSWORD=mypass
       # - LOCAL_IP=127.0.0.1
       # - LOCAL_PORT=8081
+      # USE PROXY_TYPE=http-relay to connect to a HTTP proxy
       # - PROXY_TYPE=socks5
       # - LOG_DEBUG=off
       # - LOG_INFO=on
@@ -37,6 +38,9 @@ services:
       # - TCP_KEEPALIVE_PROBES=9
       # - TCP_KEEPALIVE_TIME=300
     dns: 9.9.9.9 # Optional, but recommended if not using DNSCrypt
+    # Optional: Uncomment the following and put down PROXY_SERVER=host.docker.internal if you wish to connect to a proxy on the host machine
+    # extra_hosts:
+    #     - host.docker.internal:host-gateway
     restart: unless-stopped
 
   debian:

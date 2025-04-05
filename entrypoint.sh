@@ -81,7 +81,9 @@ configure_iptables() {
     echo "Firewall:"
     echo "  - Generating firewall rules"
     iptables -t nat -N REDSOCKS
-    if [[ ! $PROXY_SERVER =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    if [[ $PROXY_SERVER == "host.docker.internal" ]]; then
+        PROXY_IP="host.docker.internal"
+    elif [[ ! $PROXY_SERVER =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         PROXY_IP=$(dig +short ${PROXY_SERVER} | head -n1)
     else
         PROXY_IP=$PROXY_SERVER
