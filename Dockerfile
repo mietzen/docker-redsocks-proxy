@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
         gettext-base \
         iptables \
         jq \
-        ibevent-core-2.1-7t64 \
+        libevent-core-2.1-7t64 \
         procps \
         sipcalc \
     && rm -rf /var/lib/apt/lists/*
