@@ -1,9 +1,12 @@
 FROM golang:1-trixie AS dnscrypt
-ARG DNSCRYPT_VERSION=2.1.14
 
-RUN mkdir /build
-ADD https://github.com/DNSCrypt/dnscrypt-proxy/archive/refs/tags/${DNSCRYPT_VERSION}.tar.gz ./dnscrypt-proxy.tar.gz
-RUN tar --strip-components=1 -xf dnscrypt-proxy.tar.gz -C /build
+RUN apt-get update && apt-get install -y curl jq
+RUN DNSCRYPT_VERSION=$(curl -s https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest | jq -r .tag_name) \
+    && echo "Building dnscrypt-proxy version: $DNSCRYPT_VERSION" \
+    && mkdir /build \
+    && curl -L "https://github.com/DNSCrypt/dnscrypt-proxy/archive/refs/tags/${DNSCRYPT_VERSION}.tar.gz" -o /dnscrypt-proxy.tar.gz \
+    && tar --strip-components=1 -xf /dnscrypt-proxy.tar.gz -C /build
+
 WORKDIR /build/dnscrypt-proxy
 RUN go clean && CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w"
 
