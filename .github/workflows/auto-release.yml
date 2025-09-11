@@ -18,7 +18,7 @@ jobs:
       - name: Get Version
         id: get-version
         run: |
-          echo "version=$(grep FROM ./Dockerfile | head -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)" >> $GITHUB_OUTPUT
+          echo "version=stable-$(grep FROM ./Dockerfile | tail -n1 | cut -d':' -f2 | cut -d'-' -f2 | xargs)" >> $GITHUB_OUTPUT
       - uses: actions/create-github-app-token@v2
         id: generate-token
         with:
