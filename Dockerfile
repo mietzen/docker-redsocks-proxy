@@ -1,5 +1,5 @@
-FROM golang:1-bookworm AS dnscrypt
-ARG DNSCRYPT_VERSION=2.1.5
+FROM golang:1-trixie AS dnscrypt
+ARG DNSCRYPT_VERSION=2.1.14
 
 RUN mkdir /build
 ADD https://github.com/DNSCrypt/dnscrypt-proxy/archive/refs/tags/${DNSCRYPT_VERSION}.tar.gz ./dnscrypt-proxy.tar.gz
@@ -7,7 +7,7 @@ RUN tar --strip-components=1 -xf dnscrypt-proxy.tar.gz -C /build
 WORKDIR /build/dnscrypt-proxy
 RUN go clean && CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w"
 
-FROM gcc:bookworm AS redsocks
+FROM gcc:trixie AS redsocks
 ARG REDSOCKS_VERSION=release-0.5
 
 RUN mkdir /build
@@ -18,14 +18,15 @@ ADD https://patch-diff.githubusercontent.com/raw/darkk/redsocks/pull/123.patch l
 RUN git apply libevent-2.1-compat.patch
 RUN make
 
-FROM debian:bookworm-20241223
+FROM debian:trixie-20250811
 RUN apt-get update && apt-get install -y \
+        adduser \
         curl \
         dnsutils \
         gettext-base \
         iptables \
         jq \
-        libevent-core-2.1-7 \
+        libevent-core-2.1-7t64 \
         procps \
         sipcalc \
     && rm -rf /var/lib/apt/lists/*
