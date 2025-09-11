@@ -52,6 +52,9 @@ services:
       - TCP_KEEPALIVE_PROBES=9
       - TCP_KEEPALIVE_TIME=300
     dns: 9.9.9.9 # Optional, but recommended if not using DNSCrypt
+    # Optional: Uncomment the following and put down PROXY_SERVER=host.docker.internal if you wish to connect to a proxy on the host machine
+    # extra_hosts:
+    #     - host.docker.internal:host-gateway
     restart: unless-stopped
 
   debian:
