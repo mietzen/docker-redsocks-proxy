@@ -21,7 +21,7 @@ ADD https://patch-diff.githubusercontent.com/raw/darkk/redsocks/pull/123.patch l
 RUN git apply libevent-2.1-compat.patch
 RUN make
 
-FROM debian:trixie-20251103
+FROM debian:trixie-20251117
 RUN apt-get update && apt-get install -y \
         adduser \
         curl \
