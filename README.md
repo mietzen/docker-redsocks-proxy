@@ -29,7 +29,7 @@ services:
       - DOH_SERVERS=quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri # Server-List: https://dnscrypt.info/public-servers/
       - FALL_BACK_DNS=9.9.9.9
       # FIREWALL:
-      - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443
+      - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443 or ranges REDIRECT_PORTS=21,80,443,8000-9000
       - ALLOW_DOCKER_CIDR=true # Allow networking between containers
       - LIMIT_UDP=true # Drop outgoing UDP traffic (DNS is whitelisted)
       # REDSOCKS:
