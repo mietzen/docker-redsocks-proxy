@@ -31,7 +31,17 @@ export SPLICE=${SPLICE:-false}
 
 is_valid_port() {
     local port="$1"
-    [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]
+    if [[ "$port" =~ ^[0-9]+$ ]]; then
+        (( port >= 1 && port <= 65535 ))
+        return
+    fi
+    if [[ "$port" =~ ^([0-9]+):([0-9]+)$ ]]; then
+        local start="${BASH_REMATCH[1]}"
+        local end="${BASH_REMATCH[2]}"
+        (( start >= 1 && end <= 65535 && start <= end ))
+        return
+    fi
+    return 1
 }
 
 setup_dnscrypt() {
@@ -105,7 +115,7 @@ configure_iptables() {
         echo "  - Redirecting all TCP traffic"
         iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-port "$LOCAL_PORT"
     else
-        REDIRECT_PORTS=$(echo "$REDIRECT_PORTS" | sed 's/[[:space:]]//g')
+        REDIRECT_PORTS=$(echo "$REDIRECT_PORTS" | sed 's/[[:space:]]//g; s/-/:/g')
         IFS=',' read -ra PORTS <<< "$REDIRECT_PORTS"
         echo "  - Redirecting TCP Ports:"
         for PORT in "${PORTS[@]}"; do
