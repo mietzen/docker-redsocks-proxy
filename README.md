@@ -30,6 +30,7 @@ services:
       - FALL_BACK_DNS=9.9.9.9
       # FIREWALL:
       - REDIRECT_PORTS=all # Only certain port, e.g. REDIRECT_PORTS=21,80,443 or ranges REDIRECT_PORTS=21,80,443,8000-9000
+      - BYPASS_PROXY=192.0.2.1 # IPs that bypass the proxy, e.g. BYPASS_PROXY=192.0.2.1,198.51.100.1 or ranges BYPASS_PROXY=192.0.2.1,198.51.100.0/24
       - ALLOW_DOCKER_CIDR=true # Allow networking between containers
       - LIMIT_UDP=true # Drop outgoing UDP traffic (DNS is whitelisted)
       # REDSOCKS:
