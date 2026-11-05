@@ -7,6 +7,8 @@ set -eo pipefail
 export DNSCrypt_Active=${DNSCrypt_Active:-'true'}
 DOH_SERVERS=${DOH_SERVERS:-"quad9-doh-ip4-port443-nofilter-ecs-pri, quad9-doh-ip4-port443-nofilter-pri"}
 export FALL_BACK_DNS="'${FALL_BACK_DNS:-9.9.9.9}:53'"
+# BYPASS
+BYPASS_PROXY=${BYPASS_PROXY:-""}
 # FIREWALL
 ALLOW_DOCKER_CIDR=${ALLOW_DOCKER_CIDR:-true}
 REDIRECT_PORTS=${REDIRECT_PORTS:-'all'}
@@ -103,6 +105,18 @@ configure_iptables() {
 
     iptables -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A REDSOCKS -p tcp -d ${PROXY_IP} --dport ${PROXY_PORT} -j RETURN
+
+    if [[ -n "$BYPASS_PROXY" ]]; then
+        echo "  - Whitelisting BYPASS_PROXY addresses"
+        IFS=',' read -ra BYPASS_LIST <<< "$BYPASS_PROXY"
+        for ADDR in "${BYPASS_LIST[@]}"; do
+            ADDR=$(echo "$ADDR" | xargs)  # Trim spaces
+            if [[ -n "$ADDR" ]]; then
+                echo "    - $ADDR"
+                iptables -t nat -A REDSOCKS -d "$ADDR" -j RETURN
+            fi
+        done
+    fi
 
     if [[ $ALLOW_DOCKER_CIDR == true ]]; then
         echo "  - Whitelisting docker network"
